@@ -1,0 +1,36 @@
+{
+    "generator-jhipster": {
+        "promptValues": {
+            "packageName": "io.pingzi.telecheck",
+            "nativeLanguage": "zh-cn"
+        },
+        "jhipsterVersion": "5.7.2",
+        "applicationType": "monolith",
+        "baseName": "TeleCheck",
+        "packageName": "io.pingzi.telecheck",
+        "packageFolder": "io/pingzi/telecheck",
+        "serverPort": "8080",
+        "authenticationType": "jwt",
+        "cacheProvider": "ehcache",
+        "enableHibernateCache": true,
+        "websocket": false,
+        "databaseType": "sql",
+        "devDatabaseType": "h2Memory",
+        "prodDatabaseType": "mysql",
+        "searchEngine": false,
+        "messageBroker": false,
+        "serviceDiscoveryType": false,
+        "buildTool": "gradle",
+        "enableSwaggerCodegen": false,
+        "jwtSecretKey": "ZTgyM2RiN2QwZTliY2M1YTVhNzNjYmEyOTY0ZDgzODU4ZmRlNzg5MjM3ZDU3YWRjMzBjNTFmMjdkYTQ5YmQxMjI1NTQyMjFhN2E2NDRlYjJjZjYxNWIzY2E5N2IyMjY2M2EyZDRhNGE5ZTNkMGQ2MDc1ZDdjOGI5Y2RiN2RmZmQ=",
+        "clientFramework": "angularX",
+        "useSass": true,
+        "clientPackageManager": "npm",
+        "testFrameworks": [],
+        "jhiPrefix": "jhi",
+        "otherModules": [],
+        "enableTranslation": true,
+        "nativeLanguage": "zh-cn",
+        "languages": ["zh-cn"]
+    }
+}

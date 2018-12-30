@@ -1,0 +1,31 @@
+{
+    "teleCheckApp": {
+        "userInfo": {
+            "home": {
+                "title": "User Infos",
+                "createLabel": "创建新 User Info",
+                "createOrEditLabel": "创建或编辑 User Info"
+            },
+            "created": "User Info {{ param }} 创建成功",
+            "updated": "User Info {{ param }} 更新成功",
+            "deleted": "User Info {{ param }} 删除成功",
+            "delete": {
+                "question": "你确定要删除 User Info {{ id }} 吗？"
+            },
+            "detail": {
+                "title": "用户信息"
+            },
+            "userid": "用户ID",
+            "phone": "用户号码",
+            "isregister": "是否注册",
+            "status": "在线状态",
+            "logintime": "上线时间",
+            "username": "用户名",
+            "firstname": "姓",
+            "lastname": "名",
+            "isimage": "查看头像",
+            "remark": "备注",
+            "portrait": "头像"
+        }
+    }
+}

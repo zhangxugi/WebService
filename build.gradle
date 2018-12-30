@@ -168,6 +168,7 @@ dependencies {
     // Use ", version: jhipster_dependencies_version, changing: true" if you want
     // to use a SNAPSHOT release instead of a stable release
     compile group: "io.github.jhipster", name: "jhipster-framework"
+    compile group: 'org.apache.poi', name: 'poi', version: '3.17'
     compile "org.springframework.boot:spring-boot-starter-cache"
     compile "io.dropwizard.metrics:metrics-core"
     compile "io.dropwizard.metrics:metrics-jcache"

@@ -1,0 +1,72 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="userInfo">
+            <h2><span jhiTranslate="teleCheckApp.userInfo.detail.title">User Info</span> {{userInfo.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="teleCheckApp.userInfo.userid">Userid</span></dt>
+                <dd>
+                    <span>{{userInfo.userid}}</span>
+                </dd>
+                <dt><span jhiTranslate="teleCheckApp.userInfo.phone">Phone</span></dt>
+                <dd>
+                    <span>{{userInfo.phone}}</span>
+                </dd>
+                <dt><span jhiTranslate="teleCheckApp.userInfo.isregister">Isregister</span></dt>
+                <dd>
+                    <span>{{userInfo.isregister}}</span>
+                </dd>
+                <dt><span jhiTranslate="teleCheckApp.userInfo.status">Status</span></dt>
+                <dd>
+                    <span>{{userInfo.status}}</span>
+                </dd>
+                <dt><span jhiTranslate="teleCheckApp.userInfo.logintime">Logintime</span></dt>
+                <dd>
+                    <span>{{userInfo.logintime}}</span>
+                </dd>
+                <dt><span jhiTranslate="teleCheckApp.userInfo.username">Username</span></dt>
+                <dd>
+                    <span>{{userInfo.username}}</span>
+                </dd>
+                <dt><span jhiTranslate="teleCheckApp.userInfo.firstname">Firstname</span></dt>
+                <dd>
+                    <span>{{userInfo.firstname}}</span>
+                </dd>
+                <dt><span jhiTranslate="teleCheckApp.userInfo.lastname">Lastname</span></dt>
+                <dd>
+                    <span>{{userInfo.lastname}}</span>
+                </dd>
+                <dt><span jhiTranslate="teleCheckApp.userInfo.isimage">Isimage</span></dt>
+                <dd>
+                    <span>{{userInfo.isimage}}</span>
+                </dd>
+                <dt><span jhiTranslate="teleCheckApp.userInfo.remark">Remark</span></dt>
+                <dd>
+                    <span>{{userInfo.remark}}</span>
+                </dd>
+                <dt><span jhiTranslate="teleCheckApp.userInfo.portrait">Portrait</span></dt>
+                <dd>
+                    <div *ngIf="userInfo.portrait">
+                        <a (click)="openFile(userInfo.portraitContentType, userInfo.portrait)">
+                            <img [src]="'data:' + userInfo.portraitContentType + ';base64,' + userInfo.portrait" style="max-width: 100%;" alt="userInfo image"/>
+                        </a>
+                        {{userInfo.portraitContentType}}, {{byteSize(userInfo.portrait)}}
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/user-info', userInfo.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

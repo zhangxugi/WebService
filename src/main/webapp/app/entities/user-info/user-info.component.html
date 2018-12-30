@@ -1,0 +1,95 @@
+<div>
+    <h2 id="page-heading">
+        <span jhiTranslate="teleCheckApp.userInfo.home.title">User Infos</span>
+       <!-- <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-user-info" [routerLink]="['/user-info/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span  jhiTranslate="teleCheckApp.userInfo.home.createLabel">
+            Create new User Info
+            </span>
+        </button>-->
+    </h2>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="input-group col-md-3" style="margin-top:0px;positon:relative">
+        <input type="text"  class="form-control"  [(ngModel)]="phone">
+        <span class="input-group-btn">
+        <button class="btn btn-info btn-search" (click)="querys()">查找</button>
+    </span>
+        <button class="button" (click)="exports()">Download</button>
+    </div>
+
+    <div class="table-responsive" *ngIf="userInfos">
+        <table class="table table-striped">
+            <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
+            <!--<th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>-->
+            <th jhiSortBy="userid"><span jhiTranslate="teleCheckApp.userInfo.userid">Userid</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="phone"><span jhiTranslate="teleCheckApp.userInfo.phone">Phone</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="isregister"><span jhiTranslate="teleCheckApp.userInfo.isregister">Isregister</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="status"><span jhiTranslate="teleCheckApp.userInfo.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="logintime"><span jhiTranslate="teleCheckApp.userInfo.logintime">Logintime</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="username"><span jhiTranslate="teleCheckApp.userInfo.username">Username</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="firstname"><span jhiTranslate="teleCheckApp.userInfo.firstname">Firstname</span><span jhiTranslate="teleCheckApp.userInfo.lastname">Lastname</span></th>
+        <!--    <th jhiSortBy="lastname"><span jhiTranslate="teleCheckApp.userInfo.lastname">Lastname</span> <fa-icon [icon]="'sort'"></fa-icon></th>-->
+            <th jhiSortBy="isimage"><span jhiTranslate="teleCheckApp.userInfo.isimage">Isimage</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="remark"><span jhiTranslate="teleCheckApp.userInfo.remark">Remark</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="portrait"><span jhiTranslate="teleCheckApp.userInfo.portrait">Portrait</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let userInfo of userInfos ;trackBy: trackId">
+            <!--    <td><a [routerLink]="['/user-info', userInfo.id, 'view' ]">{{userInfo.id}}</a></td>-->
+                <td>{{userInfo.userid}}</td>
+                <td>{{userInfo.phone}}</td>
+                <td>{{userInfo.isregister}}</td>
+                <td>{{userInfo.status}}</td>
+                <td>{{userInfo.logintime}}</td>
+                <td>{{userInfo.username}}</td>
+                <td>{{userInfo.firstname}}{{userInfo.lastname}}</td>
+              <!--  <td>{{userInfo.lastname}}</td>-->
+                <td>{{userInfo.isimage}}</td>
+                <td>{{userInfo.remark}}</td>
+                <td>
+                    <a *ngIf="userInfo.portrait" (click)="openFile(userInfo.portraitContentType, userInfo.portrait)">
+                        <img [src]="'data:' + userInfo.portraitContentType + ';base64,' + userInfo.portrait" style="max-height: 30px;" alt="userInfo image"/>
+                    </a>
+                   <!-- <span *ngIf="userInfo.portrait">{{userInfo.portraitContentType}}, {{byteSize(userInfo.portrait)}}</span>-->
+                </td>
+               <!-- <td class="text-right">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="submit"
+                                [routerLink]="['/user-info', userInfo.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/user-info', userInfo.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'user-info/'+ userInfo.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                        </button>
+                    </div>
+                </td>-->
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div *ngIf="userInfos && userInfos.length">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="queryCount" [maxSize]="5" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="page" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage(page)"></ngb-pagination>
+        </div>
+    </div>
+</div>

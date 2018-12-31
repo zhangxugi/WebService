@@ -17,7 +17,11 @@
     </span>
         <button class="button" (click)="exports()">Download</button>
     </div>
-
+	 <input type="file" name="file"  ng2FileSelect [uploader]="uploader" />
+    <button
+             (click)="uploader.uploadAll()" [disabled]="!uploader.getNotUploadedItems().length" >
+        开始导入
+    </button>
     <div class="table-responsive" *ngIf="userInfos">
         <table class="table table-striped">
             <thead>

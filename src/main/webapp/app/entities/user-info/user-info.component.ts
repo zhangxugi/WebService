@@ -1,15 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders, HttpRequest, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { JhiEventManager, JhiParseLinks, JhiAlertService, JhiDataUtils } from 'ng-jhipster';
 
 import { IUserInfo } from 'app/shared/model/user-info.model';
 import { AccountService } from 'app/core';
-
+import { FileUploader } from 'ng2-file-upload';
 import { ITEMS_PER_PAGE } from 'app/shared';
 import { UserInfoService } from './user-info.service';
-
+import { SERVER_API_URL } from 'app/app.constants';
+const URL = SERVER_API_URL + 'api/user-infos';
 @Component({
     selector: 'jhi-user-info',
     templateUrl: './user-info.component.html'
@@ -48,7 +49,7 @@ export class UserInfoComponent implements OnInit, OnDestroy {
             this.predicate = data.pagingParams.predicate;
         });
     }
-
+    uploader: FileUploader = new FileUploader({ url: URL + '/Excelfile', itemAlias: 'file' });
     loadAll() {
         this.userInfoService
             .query({
@@ -93,6 +94,9 @@ export class UserInfoComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.uploader.onAfterAddingFile = file => {
+            file.withCredentials = false;
+        };
         this.loadAll();
         this.accountService.identity().then(account => {
             this.currentAccount = account;
@@ -145,6 +149,6 @@ export class UserInfoComponent implements OnInit, OnDestroy {
         });
     }
     exports() {
-        location.href = 'http://localhost:8080/api//user-infos/UserExcelDownloads';
+        location.href = 'http://localhost:8080/api/user-infos/UserExcelDownloads';
     }
 }

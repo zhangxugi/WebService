@@ -13,5 +13,5 @@ import java.util.List;
 @SuppressWarnings("unused")
 @Repository
 public interface UserInfoRepository extends JpaRepository<UserInfo, Long> {
-List findByPhone(String phone);
+List <UserInfo>findByPhone(String phone);
 }

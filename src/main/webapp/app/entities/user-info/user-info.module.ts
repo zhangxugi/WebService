@@ -11,11 +11,12 @@ import {
     userInfoRoute,
     userInfoPopupRoute
 } from './';
+import { FileUploadModule } from 'ng2-file-upload';
 
 const ENTITY_STATES = [...userInfoRoute, ...userInfoPopupRoute];
 
 @NgModule({
-    imports: [TeleCheckSharedModule, RouterModule.forChild(ENTITY_STATES)],
+    imports: [TeleCheckSharedModule, RouterModule.forChild(ENTITY_STATES), FileUploadModule],
     declarations: [
         UserInfoComponent,
         UserInfoDetailComponent,

@@ -12,7 +12,6 @@ public class JWTConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilt
     public JWTConfigurer(TokenProvider tokenProvider) {
         this.tokenProvider = tokenProvider;
     }
-
     @Override
     public void configure(HttpSecurity http) throws Exception {
         JWTFilter customFilter = new JWTFilter(tokenProvider);

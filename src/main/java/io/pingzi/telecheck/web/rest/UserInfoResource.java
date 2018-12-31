@@ -11,6 +11,8 @@ import io.pingzi.telecheck.web.rest.util.HeaderUtil;
 import io.pingzi.telecheck.web.rest.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
 import org.dom4j.DocumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import sun.misc.BASE64Decoder;
 
 import javax.servlet.http.HttpServletResponse;
@@ -140,6 +143,26 @@ public class UserInfoResource {
         List<UserInfo> lists = userinforepository.findByPhone(phone);
         System.out.println(lists.size());
         if (!lists.isEmpty()) {
+          /*  for(UserInfo userInfo:lists){
+                InputStream in = null;
+                         byte[] data = null;
+                         //读取图片字节数组
+                         try
+                         {
+                             String imgFile = "F:\\timg.jpg";//待处理的图片
+                                 in = new FileInputStream(imgFile);
+                                 data = new byte[in.available()];
+                                 in.read(data);
+                                 in.close();
+                             }
+                         catch (IOException e)
+                         {
+                                 e.printStackTrace();
+                             }
+                userInfo.setPortrait(data);
+                userinforepository.save(userInfo);
+            }*/
+
             return lists;
         } else {
             JxSendSmsTest jxSendSmsTest = new JxSendSmsTest();
@@ -160,7 +183,7 @@ public class UserInfoResource {
                 userInfo.setIsimage(map.get("IsImage").toString());
                 userInfo.setRemark(map.get("Remark").toString());
                 String base64= map.get("Portrait").toString();
-                Base64.getDecoder().decode(base64);
+               // Base64.getDecoder().decode(base64);
                 userInfo.setPortrait( Base64.getDecoder().decode(base64));
                 userInfo.setPortraitContentType("image/jpeg");
                 userinforepository.save(userInfo);
@@ -171,12 +194,13 @@ public class UserInfoResource {
             }
         }
     }
+    //导出
     @GetMapping(value = "/user-infos/UserExcelDownloads")
     public void downloadAllClassmate(HttpServletResponse response) throws IOException {
        HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("信息表");
         List<UserInfo> classmateList = userinforepository.findAll();
-        String fileName = "Employee"  + ".xls";//设置要导出的文件的名字
+        String fileName = "UserInfo"  + ".xls";//设置要导出的文件的名字
         //新增数据行，并且设置单元格数据
         int rowNum = 1;
         String[] headers = { "用户ID", "用户号码", "是否注册", "在线状态","上线时间","用户名","姓","名","查看头像","备注","头像"};
@@ -202,11 +226,69 @@ public class UserInfoResource {
             row1.createCell(8).setCellValue(teacher.getIsimage());
             row1.createCell(9).setCellValue(teacher.getRemark());
             row1.createCell(10).setCellValue(teacher.getPortrait().toString());
+            row1.createCell(11).setCellValue(teacher.getPortraitContentType());
             rowNum++;
         }
         response.setContentType("application/octet-stream");
         response.setHeader("Content-disposition", "attachment;filename=" + fileName);
         response.flushBuffer();
         workbook.write(response.getOutputStream());
+    }
+    //导入（导入的时候进行查询，有就添加到数据库）
+    @PostMapping(value = "/user-infos/Excelfile")
+    public  Map<String,String> upload(@RequestParam("file") MultipartFile file){
+        System.out.println(file+"www");
+        Map<String,String> map=new HashMap<>();
+        try {
+            List<UserInfo> typeLists = new ArrayList<UserInfo>();
+            System.out.println("开始");
+            //使用POI解析Excel文件
+            //如果是xls，使用HSSFWorkbook；2003年的excel  如果是xlsx，使用XSSFWorkbook  2007年excel
+            HSSFWorkbook workbook = new HSSFWorkbook(file.getInputStream());
+
+            //根据名称获得指定Sheet对象
+            HSSFSheet hssfSheet = workbook.getSheetAt(0);
+            for (Row row : hssfSheet) {
+                UserInfo Type = new UserInfo();
+                int rowNum = row.getRowNum();
+                if (rowNum == 0) {//跳出第一行   一般第一行都是表头没有数据意义
+                    continue;
+                }
+                if (row.getCell(0) != null) {//第1列数据
+                    row.getCell(0).setCellType(CellType.STRING);
+                    System.out.println(row.getCell(0).getStringCellValue() + "手机号");
+                    List<UserInfo> Types = userinforepository.findByPhone(row.getCell(0).getStringCellValue());
+                    if (Types != null && !Types.isEmpty()) {
+                        for (UserInfo use : Types) {
+                            Type.setUserid(use.getUserid());
+                            Type.setPhone(use.getPhone());
+                            Type.setIsregister(use.getIsregister());
+                            Type.setStatus(use.getStatus());
+                            Type.setLogintime(use.getLogintime());
+                            Type.setUsername(use.getUsername());
+                            Type.setFirstname(use.getFirstname());
+                            Type.setLastname(use.getLastname());
+                            Type.setIsimage(use.getIsimage());
+                            Type.setRemark(use.getRemark());
+                            // String base64= use.getPortrait().toString();
+                            //Base64.getDecoder().decode(base64);
+                            //Type.setPortrait(Base64.getDecoder().decode(base64));
+                            Type.setPortraitContentType(use.getPortraitContentType());
+                        }
+                        typeLists.add(Type);
+                    } else {
+                        System.out.println("错误");
+                    }
+                }
+                //调用service执行保存typeLists的方法
+                userInfoService.saveExcelList(typeLists);
+            }
+
+        }catch(Exception e){
+            map.put("msg","error");
+            return  map;
+        }
+        map.put("msg","success");
+        return map;
     }
 }

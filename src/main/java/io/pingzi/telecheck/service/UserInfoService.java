@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -71,5 +72,12 @@ public class UserInfoService {
     public void delete(Long id) {
         log.debug("Request to delete UserInfo : {}", id);
         userInfoRepository.deleteById(id);
+    }
+    public void saveExcelList(List<UserInfo> typeLists){
+        for (UserInfo userInfo : typeLists) {
+            //调用mapper的保存方法
+            userInfoRepository.save(userInfo);
+        }
+
     }
 }

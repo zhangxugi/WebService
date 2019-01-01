@@ -149,6 +149,16 @@ export class UserInfoComponent implements OnInit, OnDestroy {
         });
     }
     exports() {
-        location.href = 'http://localhost:8080/api/user-infos/UserExcelDownloads';
+        /*location.href = 'http://localhost:8080/api/user-infos/UserExcelDownloads';*/
+        this.userInfoService.vg().subscribe(data => {
+            const link = document.createElement('a');
+            const blob = new Blob([data], { type: 'application/vnd.ms-excel' });
+            link.setAttribute('href', window.URL.createObjectURL(blob));
+            link.setAttribute('download', 'UserInfo' + '.xls');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
     }
 }

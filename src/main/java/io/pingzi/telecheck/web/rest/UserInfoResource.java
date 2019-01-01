@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sun.misc.BASE64Decoder;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URI;
@@ -196,7 +197,9 @@ public class UserInfoResource {
     }
     //导出
     @GetMapping(value = "/user-infos/UserExcelDownloads")
-    public void downloadAllClassmate(HttpServletResponse response) throws IOException {
+    public void downloadAllClassmate(HttpServletResponse response, HttpServletRequest request) throws IOException {
+       String token= request.getHeader("Authorization");
+        System.out.println(request.getHeader("Authorization"));
        HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("信息表");
         List<UserInfo> classmateList = userinforepository.findAll();
@@ -231,8 +234,10 @@ public class UserInfoResource {
         }
         response.setContentType("application/octet-stream");
         response.setHeader("Content-disposition", "attachment;filename=" + fileName);
+        response.setHeader("Authorization",token);
         response.flushBuffer();
         workbook.write(response.getOutputStream());
+
     }
     //导入（导入的时候进行查询，有就添加到数据库）
     @PostMapping(value = "/user-infos/Excelfile")

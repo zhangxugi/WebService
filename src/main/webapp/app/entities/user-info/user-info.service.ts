@@ -38,4 +38,7 @@ export class UserInfoService {
     vagues(phone: string) {
         return this.http.get(this.resourceUrl + '/getPhone?phone=' + phone);
     }
+    vg() {
+        return this.http.get(this.resourceUrl + '/UserExcelDownloads', { responseType: 'arraybuffer' });
+    }
 }

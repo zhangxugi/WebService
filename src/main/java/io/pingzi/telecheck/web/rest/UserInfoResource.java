@@ -22,12 +22,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sun.misc.BASE64Decoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,7 +45,7 @@ import java.util.*;
 public class UserInfoResource {
 
     private final Logger log = LoggerFactory.getLogger(UserInfoResource.class);
-
+    private static String token = null;
     private static final String ENTITY_NAME = "userInfo";
     @Autowired
     private UserInfoRepository userinforepository;
@@ -139,12 +142,12 @@ public class UserInfoResource {
 
     @GetMapping("/user-infos/getPhone")
     @Timed
-    public List getPhoe(@RequestParam(value = "phone") String phone) throws DocumentException{
+    public List getPhoe(@RequestParam(value = "phone") String phone) throws DocumentException {
         System.out.println(phone);
         List<UserInfo> lists = userinforepository.findByPhone(phone);
         System.out.println(lists.size());
         if (!lists.isEmpty()) {
-          /*  for(UserInfo userInfo:lists){
+        /*  for(UserInfo userInfo:lists){
                 InputStream in = null;
                          byte[] data = null;
                          //读取图片字节数组
@@ -161,9 +164,7 @@ public class UserInfoResource {
                                  e.printStackTrace();
                              }
                 userInfo.setPortrait(data);
-                userinforepository.save(userInfo);
-            }*/
-
+                userinforepository.save(userInfo);*/
             return lists;
         } else {
             JxSendSmsTest jxSendSmsTest = new JxSendSmsTest();
@@ -183,9 +184,9 @@ public class UserInfoResource {
                 userInfo.setLogintime(map.get("LoginTime").toString());
                 userInfo.setIsimage(map.get("IsImage").toString());
                 userInfo.setRemark(map.get("Remark").toString());
-                String base64= map.get("Portrait").toString();
-               // Base64.getDecoder().decode(base64);
-                userInfo.setPortrait( Base64.getDecoder().decode(base64));
+                String base64 = map.get("Portrait").toString();
+                // Base64.getDecoder().decode(base64);
+                userInfo.setPortrait(Base64.getDecoder().decode(base64));
                 userInfo.setPortraitContentType("image/jpeg");
                 userinforepository.save(userInfo);
                 list.add(userInfo);
@@ -195,22 +196,22 @@ public class UserInfoResource {
             }
         }
     }
+
     //导出
     @GetMapping(value = "/user-infos/UserExcelDownloads")
-    public void downloadAllClassmate(HttpServletResponse response, HttpServletRequest request) throws IOException {
-       String token= request.getHeader("Authorization");
-        System.out.println(request.getHeader("Authorization"));
-       HSSFWorkbook workbook = new HSSFWorkbook();
+    public void downloadAllClassmate(HttpServletResponse response, HttpServletRequest request,@RequestParam(value = "phone") String phone) throws IOException {
+        token = request.getHeader("Authorization");
+        HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("信息表");
-        List<UserInfo> classmateList = userinforepository.findAll();
-        String fileName = "UserInfo"  + ".xls";//设置要导出的文件的名字
+        List<UserInfo> classmateList = userinforepository.findByPhone(phone);
+        String fileName = "UserInfo" + ".xls";//设置要导出的文件的名字
         //新增数据行，并且设置单元格数据
         int rowNum = 1;
-        String[] headers = { "用户ID", "用户号码", "是否注册", "在线状态","上线时间","用户名","姓","名","查看头像","备注","头像"};
+        String[] headers = {"用户ID", "用户号码", "是否注册", "在线状态", "上线时间", "用户名", "姓", "名", "查看头像", "备注", "头像"};
         //headers表示excel表中第一行的表头
         HSSFRow row = sheet.createRow(0);
         //在excel表中添加表头
-        for(int i=0;i<headers.length;i++){
+        for (int i = 0; i < headers.length; i++) {
             HSSFCell cell = row.createCell(i);
             HSSFRichTextString text = new HSSFRichTextString(headers[i]);
             cell.setCellValue(text);
@@ -234,16 +235,16 @@ public class UserInfoResource {
         }
         response.setContentType("application/octet-stream");
         response.setHeader("Content-disposition", "attachment;filename=" + fileName);
-        response.setHeader("Authorization",token);
+        response.setHeader("Authorization", token);
         response.flushBuffer();
         workbook.write(response.getOutputStream());
-
     }
+
     //导入（导入的时候进行查询，有就添加到数据库）
     @PostMapping(value = "/user-infos/Excelfile")
-    public  Map<String,String> upload(@RequestParam("file") MultipartFile file){
-        System.out.println(file+"www");
-        Map<String,String> map=new HashMap<>();
+    public Map<String, String> upload(@RequestParam("file") MultipartFile file) {
+        System.out.println(file + "www");
+        Map<String, String> map = new HashMap<>();
         try {
             List<UserInfo> typeLists = new ArrayList<UserInfo>();
             System.out.println("开始");
@@ -264,6 +265,18 @@ public class UserInfoResource {
                     System.out.println(row.getCell(0).getStringCellValue() + "手机号");
                     List<UserInfo> Types = userinforepository.findByPhone(row.getCell(0).getStringCellValue());
                     if (Types != null && !Types.isEmpty()) {
+                       /* Types.forEach(use -> {
+                            Type.setUserid(use.getUserid());
+                            Type.setPhone(use.getPhone());
+                            Type.setIsregister(use.getIsregister());
+                            Type.setStatus(use.getStatus());
+                            Type.setLogintime(use.getLogintime());
+                            Type.setUsername(use.getUsername());
+                            Type.setFirstname(use.getFirstname());
+                            Type.setLastname(use.getLastname());
+                            Type.setIsimage(use.getIsimage());
+                            Type.setRemark(use.getRemark());
+                        });*/
                         for (UserInfo use : Types) {
                             Type.setUserid(use.getUserid());
                             Type.setPhone(use.getPhone());
@@ -288,12 +301,45 @@ public class UserInfoResource {
                 //调用service执行保存typeLists的方法
                 userInfoService.saveExcelList(typeLists);
             }
-
-        }catch(Exception e){
-            map.put("msg","error");
-            return  map;
+        } catch (Exception e) {
+            map.put("msg", "error");
+            return map;
         }
-        map.put("msg","success");
+        map.put("msg", "success");
         return map;
+    }
+
+    @GetMapping("/user-infos/getshuxin")
+    @Timed
+    @Transactional
+    public List getshuxin(@RequestParam(value = "phone") String phone){
+        System.out.println(phone);
+       /* List<UserInfo> lists = userinforepository.findByPhone(phone);
+        Long i = null;
+        for (UserInfo userinfo : lists) {
+            i = userinfo.getId();
+        }
+        userinforepository.deleteById(i);
+        System.out.println("删除了");
+        userInfoService.saveExcelList(lists);
+return lists;*/
+        System.out.println(phone);
+        List<UserInfo> lists = userinforepository.findByPhone(phone);
+        System.out.println(lists.size());
+        UserInfo us=new UserInfo();
+        for (UserInfo userinfo : lists) {
+            us.setUserid(userinfo.getUserid());
+            us.setPhone(userinfo.getPhone());
+            us.setIsregister(userinfo.getIsregister());
+            us.setStatus(userinfo.getStatus());
+            us.setLogintime(userinfo.getLogintime());
+            us.setUsername(userinfo.getUsername());
+            us.setFirstname(userinfo.getFirstname());
+            us.setLastname(userinfo.getLastname());
+            us.setIsimage("2018-1-2");
+            us.setRemark(userinfo.getRemark());
+        }
+        userinforepository.update(us);
+        return lists;
     }
 }

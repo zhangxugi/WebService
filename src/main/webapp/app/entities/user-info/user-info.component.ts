@@ -94,9 +94,9 @@ export class UserInfoComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.uploader.onAfterAddingFile = file => {
+        /*this.uploader.onAfterAddingFile = file => {
             file.withCredentials = false;
-        };
+        };*/
         this.loadAll();
         this.accountService.identity().then(account => {
             this.currentAccount = account;
@@ -144,13 +144,17 @@ export class UserInfoComponent implements OnInit, OnDestroy {
     }
     querys() {
         alert(this.phone);
-        this.userInfoService.vagues(this.phone).subscribe(data => {
-            this.userInfos = data;
-        });
+        if (this.phone === undefined || this.phone === '') {
+            this.ngOnInit();
+        } else {
+            this.userInfoService.vagues(this.phone).subscribe(data => {
+                this.userInfos = data;
+            });
+        }
     }
     exports() {
         /*location.href = 'http://localhost:8080/api/user-infos/UserExcelDownloads';*/
-        this.userInfoService.vg().subscribe(data => {
+        this.userInfoService.vg(this.phone).subscribe(data => {
             const link = document.createElement('a');
             const blob = new Blob([data], { type: 'application/vnd.ms-excel' });
             link.setAttribute('href', window.URL.createObjectURL(blob));
@@ -159,6 +163,12 @@ export class UserInfoComponent implements OnInit, OnDestroy {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        });
+    }
+    sd(phone: string) {
+        this.userInfoService.vag(phone).subscribe(data => {
+            this.userInfos = data;
+            this.loadAll();
         });
     }
 }

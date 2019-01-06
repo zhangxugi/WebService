@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { HttpErrorResponse, HttpHeaders, HttpRequest, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -13,9 +13,11 @@ import { SERVER_API_URL } from 'app/app.constants';
 const URL = SERVER_API_URL + 'api/user-infos';
 @Component({
     selector: 'jhi-user-info',
-    templateUrl: './user-info.component.html'
+    templateUrl: './user-info.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserInfoComponent implements OnInit, OnDestroy {
+    private timer; //定时器
     currentAccount: any;
     userInfos: any;
     error: any;
@@ -31,6 +33,7 @@ export class UserInfoComponent implements OnInit, OnDestroy {
     previousPage: any;
     reverse: any;
     phone: string;
+
     constructor(
         protected userInfoService: UserInfoService,
         protected parseLinks: JhiParseLinks,
@@ -39,7 +42,8 @@ export class UserInfoComponent implements OnInit, OnDestroy {
         protected activatedRoute: ActivatedRoute,
         protected dataUtils: JhiDataUtils,
         protected router: Router,
-        protected eventManager: JhiEventManager
+        protected eventManager: JhiEventManager,
+        private ref: ChangeDetectorRef
     ) {
         this.itemsPerPage = ITEMS_PER_PAGE;
         this.routeData = this.activatedRoute.data.subscribe(data => {
@@ -48,7 +52,13 @@ export class UserInfoComponent implements OnInit, OnDestroy {
             this.reverse = data.pagingParams.ascending;
             this.predicate = data.pagingParams.predicate;
         });
+        this.timer = setInterval(() => {
+            //设置定时刷新事件，每隔5秒刷新
+            this.loadAll();
+            this.ref.detectChanges();
+        }, 1000);
     }
+
     uploader: FileUploader = new FileUploader({ url: URL + '/Excelfile', itemAlias: 'file' });
     loadAll() {
         this.userInfoService
@@ -153,7 +163,6 @@ export class UserInfoComponent implements OnInit, OnDestroy {
         }
     }
     exports() {
-        /*location.href = 'http://localhost:8080/api/user-infos/UserExcelDownloads';*/
         this.userInfoService.vg(this.phone).subscribe(data => {
             const link = document.createElement('a');
             const blob = new Blob([data], { type: 'application/vnd.ms-excel' });

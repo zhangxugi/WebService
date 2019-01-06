@@ -3,7 +3,9 @@ package io.pingzi.telecheck.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import io.pingzi.telecheck.domain.Analysis;
 import io.pingzi.telecheck.domain.JxSendSmsTest;
+import io.pingzi.telecheck.domain.Tasklist;
 import io.pingzi.telecheck.domain.UserInfo;
+import io.pingzi.telecheck.repository.TasklistRepository;
 import io.pingzi.telecheck.repository.UserInfoRepository;
 import io.pingzi.telecheck.service.UserInfoService;
 import io.pingzi.telecheck.web.rest.errors.BadRequestAlertException;
@@ -36,6 +38,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * REST controller for managing UserInfo.
@@ -49,6 +54,8 @@ public class UserInfoResource {
     private static final String ENTITY_NAME = "userInfo";
     @Autowired
     private UserInfoRepository userinforepository;
+    @Autowired
+    private TasklistRepository tasklistrepository;
     private final UserInfoService userInfoService;
 
     public UserInfoResource(UserInfoService userInfoService) {
@@ -241,7 +248,7 @@ public class UserInfoResource {
     }
 
     //导入（导入的时候进行查询，有就添加到数据库）
-    @PostMapping(value = "/user-infos/Excelfile")
+   /* @PostMapping(value = "/user-infos/Excelfile")
     public Map<String, String> upload(@RequestParam("file") MultipartFile file) {
         System.out.println(file + "www");
         Map<String, String> map = new HashMap<>();
@@ -265,7 +272,7 @@ public class UserInfoResource {
                     System.out.println(row.getCell(0).getStringCellValue() + "手机号");
                     List<UserInfo> Types = userinforepository.findByPhone(row.getCell(0).getStringCellValue());
                     if (Types != null && !Types.isEmpty()) {
-                       /* Types.forEach(use -> {
+                       *//* Types.forEach(use -> {
                             Type.setUserid(use.getUserid());
                             Type.setPhone(use.getPhone());
                             Type.setIsregister(use.getIsregister());
@@ -276,7 +283,7 @@ public class UserInfoResource {
                             Type.setLastname(use.getLastname());
                             Type.setIsimage(use.getIsimage());
                             Type.setRemark(use.getRemark());
-                        });*/
+                        });*//*
                         for (UserInfo use : Types) {
                             Type.setUserid(use.getUserid());
                             Type.setPhone(use.getPhone());
@@ -307,22 +314,13 @@ public class UserInfoResource {
         }
         map.put("msg", "success");
         return map;
-    }
-
+    }*/
+//刷新
     @GetMapping("/user-infos/getshuxin")
     @Timed
     @Transactional
     public List getshuxin(@RequestParam(value = "phone") String phone){
         System.out.println(phone);
-       /* List<UserInfo> lists = userinforepository.findByPhone(phone);
-        Long i = null;
-        for (UserInfo userinfo : lists) {
-            i = userinfo.getId();
-        }
-        userinforepository.deleteById(i);
-        System.out.println("删除了");
-        userInfoService.saveExcelList(lists);
-return lists;*/
         System.out.println(phone);
         List<UserInfo> lists = userinforepository.findByPhone(phone);
         System.out.println(lists.size());
@@ -342,4 +340,83 @@ return lists;*/
         userinforepository.update(us);
         return lists;
     }
+
+
+
+    @PostMapping(value = "/user-infos/Excelfile")
+    public Map<String, String> upload(@RequestParam("file") MultipartFile file)throws IOException {
+        System.out.println(file + "www");
+        Map<String, String> map = new HashMap<>();
+        System.out.println("开始");
+        //使用POI解析Excel文件
+        //如果是xls，使用HSSFWorkbook；2003年的excel  如果是xlsx，使用XSSFWorkbook  2007年exce
+        System.out.println("线程1启动");
+        HSSFWorkbook workbook = new HSSFWorkbook(file.getInputStream());
+        //根据名称获得指定Sheet对象
+        HSSFSheet hssfSheet = workbook.getSheetAt(0);
+        for (Row row : hssfSheet) {
+            Tasklist tasklist = new Tasklist();
+            int rowNum = row.getRowNum();
+            if (rowNum == 0) {//跳出第一行   一般第一行都是表头没有数据意义
+                continue;
+            }
+            if (row.getCell(0) != null) {//第1列数据
+                row.getCell(0).setCellType(CellType.STRING);
+                System.out.println(row.getCell(0).getStringCellValue() + "手机号");
+                tasklist.setPhone(row.getCell(0).getStringCellValue());
+                tasklist.setResult(0);
+                tasklist.setState(0);
+                tasklistrepository.save(tasklist);
+            }
+        }
+        Thread t2 = new Thread() {
+            @Override
+            public void run() {
+                System.out.println("线程2启动");
+                    try {
+                        Thread.sleep(300);
+                        List<Tasklist> list = tasklistrepository.findAll();
+                        System.out.println(list.size() + "条");
+                        String phone;
+                        for (Tasklist tasklists : list) {
+                            if (tasklists.getState() == 0) {
+                                System.out.println("执行线程2业务");
+                                phone = tasklists.getPhone();
+                                System.out.println(phone + "是多少");
+                                List<UserInfo> lists = userinforepository.findByPhone(phone);
+                                UserInfo Type = new UserInfo();
+                                System.err.print(lists.get(0).getPhone()+"手机号");
+                                    Type.setUserid(lists.get(0).getUserid());
+                                    Type.setPhone(lists.get(0).getPhone());
+                                    Type.setIsregister(lists.get(0).getIsregister());
+                                    Type.setStatus(lists.get(0).getStatus());
+                                    Type.setLogintime(lists.get(0).getLogintime());
+                                    Type.setUsername(lists.get(0).getUsername());
+                                    Type.setFirstname(lists.get(0).getFirstname());
+                                    Type.setLastname(lists.get(0).getLastname());
+                                    Type.setIsimage(lists.get(0).getIsimage());
+                                    Type.setRemark(lists.get(0).getRemark());
+                                    Type.setPortraitContentType(lists.get(0).getPortraitContentType());
+                                    System.out.println("保存");
+                                    userinforepository.save(Type);
+                                System.err.println(phone+"得到的手机号");
+                                    System.out.println("修改");
+                                    tasklistrepository.update(1,1,phone);
+                                }
+                        }
+                        System.out.println("线程2完成任务退出");
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+            }
+        };
+        ScheduledExecutorService service = Executors
+            .newSingleThreadScheduledExecutor();
+        // 第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间
+        service.scheduleAtFixedRate(t2, 2, 5, TimeUnit.SECONDS);
+        return map;
+    }
+
+
 }
